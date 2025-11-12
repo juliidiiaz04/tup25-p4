@@ -2,8 +2,8 @@ from sqlmodel import create_engine, SQLModel, Session, select
 from typing import Generator
 import json
 import os
-from models.users import Usuario # Importamos desde models/
-from models.productos import Producto, Carrito, ItemCarrito, Compra, ItemCompra # Importamos desde models/
+from models.users import Usuario 
+from models.productos import Producto, Carrito, ItemCarrito, Compra, ItemCompra 
 
 # Configuración de la Base de Datos SQLite
 sqlite_file_name = "database.db"
@@ -18,8 +18,9 @@ def load_initial_data(session: Session):
     
     # Ruta al archivo productos.json
     try:
-        # La ruta asume que main.py y productos.json están en la raíz del backend
-        path = os.path.join(os.path.dirname(__file__), "..", "..", "productos.json")
+        # 💥 CORRECCIÓN: Busca el JSON UN NIVEL ARRIBA de 'app/'
+        # Esto asume que productos.json está al mismo nivel que main.py
+        path = os.path.join(os.path.dirname(__file__), "..", "productos.json")
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
     except FileNotFoundError:
@@ -27,7 +28,7 @@ def load_initial_data(session: Session):
         return
         
     for item in data:
-        # Mapeo CRUCIAL: 'titulo' a 'nombre' y 'imagen' a 'imagen_url'
+        # Mapeo CRUCIAL: 'titulo' (JSON) a 'nombre' (DB) y 'imagen' a 'imagen_url'
         producto = Producto(
             nombre=item["titulo"],
             descripcion=item["descripcion"],

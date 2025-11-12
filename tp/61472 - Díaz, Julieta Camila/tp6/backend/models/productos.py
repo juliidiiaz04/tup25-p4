@@ -30,6 +30,10 @@ class CarritoBase(SQLModel):
 class Carrito(CarritoBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     usuario_id: int = Field(foreign_key="usuario.id", index=True) 
+    
+    # 💥 CORRECCIÓN: PROPIEDAD 'usuario' FALTANTE 
+    usuario: "Usuario" = Relationship(back_populates="carritos") # <-- ¡AÑADIDA!
+    
     productos: List[ItemCarrito] = Relationship(back_populates="carrito") 
 
 # --- 3. Compra y su Ítem (Historial) ---
@@ -53,4 +57,8 @@ class CompraBase(SQLModel):
 class Compra(CompraBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     usuario_id: int = Field(foreign_key="usuario.id")
+    
+    # 💥 CORRECCIÓN: PROPIEDAD 'usuario' FALTANTE
+    usuario: "Usuario" = Relationship(back_populates="compras") # <-- ¡AÑADIDA!
+
     items: List[ItemCompra] = Relationship(back_populates="compra")
