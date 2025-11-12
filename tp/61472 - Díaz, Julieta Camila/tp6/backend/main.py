@@ -3,10 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 
-
+# Importamos desde la nueva carpeta 'app'
 from app.db import create_db_and_tables 
 from app.routers import users
 from app.routers import products 
+from app.routers import cart # <-- ¡IMPORTAR ROUTER DEL CARRITO!
 
 # Importamos los modelos (para que SQLModel los vea al crear la DB)
 from models.users import Usuario
@@ -23,7 +24,6 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="TP6 E-Commerce API", lifespan=lifespan)
 
 # --- Montar directorio de imágenes ---
-# Esto hace que 'http://localhost:8000/imagenes/nombre.jpg' funcione
 app.mount("/imagenes", StaticFiles(directory="imagenes"), name="imagenes")
 
 # --- Configurar CORS ---
@@ -34,11 +34,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# --- Incluir Routers ---
+# --- Incluir routers ---
 app.include_router(users.router, prefix="/api") 
-app.include_router(products.router, prefix="/api") # <-- Router de productos activo
-
+app.include_router(products.router, prefix="/api") 
+app.include_router(cart.router, prefix="/api") # <-- ¡INCLUIR ROUTER DEL CARRITO!
 
 @app.get("/")
 def root():
