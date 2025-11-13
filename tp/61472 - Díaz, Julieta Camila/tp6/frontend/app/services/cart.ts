@@ -1,5 +1,6 @@
 import { CarritoRead, CompraReadDetail, CompraReadSummary } from '../types';
 
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 function getAuthHeaders(token: string) {
@@ -8,6 +9,7 @@ function getAuthHeaders(token: string) {
         'Authorization': `Bearer ${token}`,
     };
 }
+
 
 
 export async function fetchCart(token: string): Promise<CarritoRead> {
@@ -26,6 +28,7 @@ export async function fetchCart(token: string): Promise<CarritoRead> {
 }
 
 
+
 export async function addItemToCart(token: string, producto_id: number, cantidad: number = 1) {
     const response = await fetch(`${API_BASE_URL}/carrito`, {
         method: 'POST',
@@ -36,10 +39,11 @@ export async function addItemToCart(token: string, producto_id: number, cantidad
     if (!response.ok) {
         const error = await response.json();
         
-        throw new Error(error.detail || 'Fallo al agregar producto.');
+        throw new Error(error.detail || 'Fallo al agregar producto. Stock insuficiente.');
     }
     return response.json();
 }
+
 
 
 export async function removeItemFromCart(token: string, producto_id: number) {
@@ -51,10 +55,12 @@ export async function removeItemFromCart(token: string, producto_id: number) {
     if (response.status === 404) {
         throw new Error("El producto no está en el carrito.");
     }
+    
     if (!response.ok && response.status !== 204) {
         throw new Error('Error al quitar producto.');
     }
 }
+
 
 
 interface CheckoutPayload {
@@ -70,12 +76,36 @@ export async function finalizeCheckout(token: string, payload: CheckoutPayload) 
 
     if (!response.ok) {
         const error = await response.json();
-       
+        
         throw new Error(error.detail || 'Error al finalizar la compra.');
     }
     return response.json(); 
 }
 
 
-export async function fetchPurchaseHistory(token: string): Promise<CompraReadSummary[]> { /* ... */ return []; }
-export async function fetchPurchaseDetail(token: string, compraId: number): Promise<CompraReadDetail> { /* ... */ throw new Error('No implementado'); }
+export async function fetchPurchaseHistory(token: string): Promise<CompraReadSummary[]> {
+    const response = await fetch(`${API_BASE_URL}/compras`, {
+        headers: getAuthHeaders(token),
+        cache: 'no-store'
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Error al cargar el historial de compras.');
+    }
+    return response.json();
+}
+
+
+export async function fetchPurchaseDetail(token: string, compraId: number): Promise<CompraReadDetail> {
+    const response = await fetch(`${API_BASE_URL}/compras/${compraId}`, {
+        headers: getAuthHeaders(token),
+        cache: 'no-store'
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Error al cargar el detalle de la compra.');
+    }
+    return response.json();
+}
